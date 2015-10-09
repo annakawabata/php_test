@@ -1,0 +1,30 @@
+データベース
+
+create database php_test;
+
+
+use php_test;
+
+
+CREATE TABLE `posts` (
+`id` int(10) not null AUTO_INCREMENT,
+`name` varchar(64) NOT NULL,
+`message`  text(400) NOT NULL,
+`password` varchar(255) NOT NULL,
+`del_flg` tinyint(1) NOT NULL  ,
+`create_date` datetime NOT NULL,
+`update_date` datetime DEFAULT NULL,
+PRIMARY KEY (`id`)
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE  `comments` (
+`id`int(10)  not null AUTO_INCREMENT,
+`post_id` varchar(64)  NOT NULL,
+`message` text(400)  NOT NULL,
+`reply_post_id` text(10)  NOT NULL,
+`del_flg` tinyint(1) NOT NULL DEFAULT '0',
+`create_date` datetime NOT NULL,
+`update_date` datetime DEFAULT NULL,
+PRIMARY KEY (`id`)
+)ENGINE=InnoDB  DEFAULT CHARSET=utf8;
