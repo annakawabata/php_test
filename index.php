@@ -2,20 +2,14 @@
 session_start();
 require('dbconnect.php');
 
+function h($value){
+  return htmlspecialchars($value,ENT_QUOTES,'UTF-8');
+}
+
 if (!empty($_POST)){
 
 if($_POST['name'] == ''){ 
   $error['name'] = 'blank';
-  //var_dump($_POST);
-}
-if(strlen($_POST['password'])< 4 ){
-  $error['password'] = 'length';
-}
-if(strlen($_POST['password'])> 8 ){
-  $error['password'] = 'length';
-}
-if($_POST['password'] == ''){
-  $error['password'] = 'blank';
 }
 if(strlen($_POST['message'])> 400 ){
   $error['message'] = 'length';
@@ -23,22 +17,44 @@ if(strlen($_POST['message'])> 400 ){
 if($_POST['message'] == ''){
   $error['message'] = 'blank';
 }
+// if(strlen($_POST['password'])< 4 ){
+//   $error['password'] = 'length';
+// }
+// if(strlen($_POST['password'])> 8 ){
+//   $error['password'] = 'length';
+// }
+if(mb_strlen($password) < 4) {
 
+  $regist_error .= "パスワードは4文字以上で設定してください<br />";
+  } elseif (mb_strlen($password) > 8) {
+  $regist_error .= "パスワードが長すぎます。8文字以下で設定してください。<br />";
+
+}
+if (!preg_match( "/[\@-\~]/" , $password)) {
+
+$regist_error .= "パスワードは半角英数字及び記号のみ入力してください。<br />";
+
+}
+if($_POST['password'] == ''){
+  $error['password'] = 'blank';
+}
+
+if($name == ''|| $password == ''||  $message == ''){
+}
 if(!empty($_POST)){
   
     $sql = sprintf('INSERT INTO posts SET name="%s",message="%s",password="%s",del_flg=0, create_date=NOW(),update_date=NOW()',
       mysqli_real_escape_string($db,$_POST['name']),
-      mysqli_real_escape_string($db,$_POST['password']),//パスワードを記録する
-      mysqli_real_escape_string($db,$_POST['message']));//返信機能を記録する
+      mysqli_real_escape_string($db,$_POST['message']),//パスワードを記録する
+      mysqli_real_escape_string($db,$_POST['password']));
       mysqli_query($db,$sql) or die(mysqli_error($db));
       header('Location: index.php');
     exit();
   }
 }
 
-$sqls = 'SELECT * FROM posts WHERE del_flg=0';
+$sqls = 'SELECT * FROM posts WHERE del_flg=0 ORDER BY id DESC';
 $datas = mysqli_query($db,$sqls) or die(mysqli_error($db));
-
 
 ?>
 
@@ -85,22 +101,22 @@ $datas = mysqli_query($db,$sqls) or die(mysqli_error($db));
               <p class="error" >*パスワードは４文字以上で入力して下さい</p> 
               <?php endif; ?>
             <?php endif; ?>
-        </dd>
+    </dd>
 
     記事：必須</br>
 
     <dd>
-          <?php if(!isset($message)){
-          $message = '';
+        <?php if(!isset($message)){
+        $message = '';
         }
         ?>
-          <input type="message" name="message" size="10" maxlength="400" />
-          <?php if (isset($error['message'])): ?>
-            <?php if ($error['message'] == 'lengh'): ?> 
-            <p class="error">*記事は400文字以内で投稿して下さい</p> 
-            <?php endif; ?>
+        <textarea type="text" name="message" style="width:300px" maxlength="400" ></textarea>
+        <?php if (isset($error['message'])): ?>
+          <?php if ($error['message'] == ''): ?> 
+          <p class="error">*記事を400文字以内で投稿して下さい</p> 
           <?php endif; ?>
-        </dd>
+        <?php endif; ?>
+    </dd>
     
     </br>
     
@@ -112,8 +128,12 @@ $datas = mysqli_query($db,$sqls) or die(mysqli_error($db));
   <?php while ($data = mysqli_fetch_array($datas)) :?>
     <p>ニックネーム：<?php echo $data['name'] ;?></p>
     <p>メッセージ：<?php echo $data['message'] ;?></p>
-    <p><a href="delete.php?id=%d">[削除]</a></p>
-    <p><a href="update.php?code=%d">[編集]</a></p>
+    <p>投稿日時：<?php echo $data['create_date'] ;?></p>
+    <p>編集日時：<?php echo $data['update_date'] ;?></p>
+    <a href="delete.php?id=<?php echo h($data['id'])?>">[削除]</a>
+    <a href="update.php?id=<?php echo h($data['id'])?>">[編集]</a>
+    <a href="ichiran.php?id=<?php echo h($data['id'])?>">[詳細]</a>
+    
   <?php endwhile ;?>
 
 
